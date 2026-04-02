@@ -110,10 +110,31 @@ async function readableStreamToBlob(readable: ReadableStream) {
   return await new Response(readable).blob();
 }
 
+function normalizeShelbyError(error: unknown) {
+  const fallback = "Shelby request failed. Check your API key, wallet, and network setup.";
+
+  if (!(error instanceof Error)) {
+    return fallback;
+  }
+
+  const message = error.message;
+
+  if (message.includes("Unauthorized: Anonymous requests are not allowed")) {
+    return "Shelby API key was not sent or was rejected. Restart the app after saving .env.local, then verify the client key is active.";
+  }
+
+  if (message.includes("401")) {
+    return "Shelby rejected the request with 401 Unauthorized. Verify your Shelby client key and restart the app.";
+  }
+
+  return message;
+}
+
 function ShelbyStateProvider({ children }: PropsWithChildren) {
   const wallet = useWallet();
   const shelbyClient = useShelbyClient();
   const config = getShelbyRuntimeConfig();
+  const hasShelbyKey = Boolean(config.shelbyApiKey);
   const [activity, setActivity] = useState<ShelbyActivityRecord[]>([]);
   const [queue, setQueueState] = useState<File[]>([]);
   const [selectedBlobName, setSelectedBlobName] = useState<string | null>(null);
@@ -126,14 +147,14 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
 
   const blobsQuery = useAccountBlobs({
     account: accountAddress ?? "",
-    enabled: Boolean(accountAddress),
+    enabled: Boolean(accountAddress && hasShelbyKey),
     pagination: { limit: 100, offset: 0 },
   });
 
   const metadataQuery = useBlobMetadata({
     account: accountAddress ?? "",
     name: selectedBlobName ?? "",
-    enabled: Boolean(accountAddress && selectedBlobName),
+    enabled: Boolean(accountAddress && selectedBlobName && hasShelbyKey),
   });
 
   const uploadBlobs = useUploadBlobs({
@@ -185,6 +206,11 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
   }
 
   async function refreshBlobs() {
+    if (!hasShelbyKey) {
+      setLocalError("Shelby API key missing. Restart the app after saving .env.local.");
+      return;
+    }
+
     setLocalError(null);
     await blobsQuery.refetch();
 
@@ -194,6 +220,11 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
   }
 
   async function selectBlob(blobName: string) {
+    if (!hasShelbyKey) {
+      setLocalError("Shelby API key missing. Restart the app after saving .env.local.");
+      return;
+    }
+
     setLocalError(null);
     setSelectedBlobName(blobName);
   }
@@ -206,6 +237,11 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
 
     if (!wallet.connected || !accountAddress || !wallet.signAndSubmitTransaction) {
       setLocalError("Connect an Aptos wallet first so Shelby can upload with the official signer flow.");
+      return;
+    }
+
+    if (!hasShelbyKey) {
+      setLocalError("Shelby API key missing. Restart the app after saving .env.local.");
       return;
     }
 
@@ -232,8 +268,7 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
       setQueueState([]);
       await refreshBlobs();
     } catch (caughtError) {
-      const message =
-        caughtError instanceof Error ? caughtError.message : "Shelby upload failed.";
+      const message = normalizeShelbyError(caughtError);
       setLocalError(message);
       log(message, "error");
     }
@@ -270,8 +305,7 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
       URL.revokeObjectURL(objectUrl);
       log(`Downloaded ${target}.`, "success");
     } catch (caughtError) {
-      const message =
-        caughtError instanceof Error ? caughtError.message : "Failed to download this blob.";
+      const message = normalizeShelbyError(caughtError);
       setLocalError(message);
       log(message, "error");
     } finally {
@@ -310,9 +344,9 @@ function ShelbyStateProvider({ children }: PropsWithChildren) {
 
   const error =
     localError ??
-    uploadBlobs.error?.message ??
-    blobsQuery.error?.message ??
-    metadataQuery.error?.message ??
+    (uploadBlobs.error ? normalizeShelbyError(uploadBlobs.error) : null) ??
+    (blobsQuery.error ? normalizeShelbyError(blobsQuery.error) : null) ??
+    (metadataQuery.error ? normalizeShelbyError(metadataQuery.error) : null) ??
     null;
 
   const value: ShelbyAppContextValue = {

@@ -83,3 +83,15 @@ export function encodeBlobPath(blobName: string) {
     .map((segment) => encodeURIComponent(segment))
     .join("/");
 }
+
+export function formatBlobDisplayName(blobName: string) {
+  const normalized = blobName.trim();
+
+  if (!normalized) {
+    return "Unnamed blob";
+  }
+
+  const tail = normalized.split("/").pop();
+
+  return tail && tail.trim() ? tail : normalized;
+}

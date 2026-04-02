@@ -711,6 +711,12 @@ a:focus-visible {
   justify-content: space-between;
 }
 
+.node-card-top {
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
 .stream-title-wrap {
   gap: 16px;
 }
@@ -734,6 +740,9 @@ a:focus-visible {
   margin: 0;
   font-family: var(--display);
   font-size: 1.15rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .stream-card p,
@@ -1448,11 +1457,19 @@ a:focus-visible {
   padding: 18px 20px;
 }
 
+.blob-row > div,
+.invoice-copy {
+  min-width: 0;
+}
+
 .blob-row h2,
 .blob-summary-card h3 {
   margin: 0;
   font-family: var(--display);
   font-size: 1.18rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .blob-row p,
@@ -1522,6 +1539,7 @@ a:focus-visible {
   border: 1px solid rgba(255, 210, 227, 0.08);
   background: rgba(45, 20, 15, 0.68);
   border-radius: var(--radius-md);
+  min-width: 0;
 }
 
 .blob-summary-card.is-empty {

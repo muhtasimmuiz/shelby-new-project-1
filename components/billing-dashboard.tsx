@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBytes } from "../lib/shelby-runtime";
+import { formatBlobDisplayName, formatBytes } from "../lib/shelby-runtime";
 import { useShelbySummary } from "../app/providers";
 
 export function BillingDashboard() {
@@ -136,8 +136,8 @@ export function BillingDashboard() {
           {blobs.length ? (
             blobs.map((blob) => (
               <div key={blob.name} className="invoice-card">
-                <div>
-                  <h2>{blob.name}</h2>
+                <div className="invoice-copy" title={blob.name}>
+                  <h2>{formatBlobDisplayName(blob.name)}</h2>
                   <p>{formatBytes(blob.size)} stored on Shelby</p>
                 </div>
                 <strong>1.00 sUSD</strong>

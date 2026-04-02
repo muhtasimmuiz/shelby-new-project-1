@@ -1,6 +1,6 @@
 "use client";
 
-import { formatMicros } from "../lib/shelby-runtime";
+import { formatBlobDisplayName, formatMicros } from "../lib/shelby-runtime";
 import { useShelbySummary } from "../app/providers";
 
 function rpcLabel(url: string) {
@@ -87,7 +87,7 @@ export function ProtocolRightRail() {
 
         {activeBlob ? (
           <div className="blob-summary-card">
-            <h3>{activeBlob.name}</h3>
+            <h3 title={activeBlob.name}>{formatBlobDisplayName(activeBlob.name)}</h3>
             <p>{activeBlob.isWritten ? "Written to Shelby RPC" : "Awaiting confirmation"}</p>
             <div className="blob-summary-meta">
               <span>{activeBlob.size.toLocaleString()} bytes</span>

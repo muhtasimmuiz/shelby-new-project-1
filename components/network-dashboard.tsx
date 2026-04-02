@@ -1,6 +1,6 @@
 "use client";
 
-import { formatBytes, formatMicros } from "../lib/shelby-runtime";
+import { formatBlobDisplayName, formatBytes, formatMicros } from "../lib/shelby-runtime";
 import { useShelbySummary } from "../app/providers";
 
 export function NetworkDashboard() {
@@ -64,10 +64,11 @@ export function NetworkDashboard() {
                   key={blob.name}
                   type="button"
                   className="node-card node-card-button"
+                  title={blob.name}
                   onClick={() => void selectBlob(blob.name)}
                 >
                   <div className="node-card-top">
-                    <h2>{blob.name}</h2>
+                    <h2>{formatBlobDisplayName(blob.name)}</h2>
                     <strong>{formatBytes(blob.size)}</strong>
                   </div>
                   <p>{blob.isDeleted ? "Deleted" : blob.isWritten ? "Written" : "Pending"}</p>

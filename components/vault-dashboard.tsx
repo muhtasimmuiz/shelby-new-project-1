@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { formatBytes } from "../lib/shelby-runtime";
+import { formatBlobDisplayName, formatBytes } from "../lib/shelby-runtime";
 import { useShelbySummary } from "../app/providers";
 
 export function VaultDashboard() {
@@ -243,10 +243,11 @@ export function VaultDashboard() {
                 key={blob.name}
                 type="button"
                 className="blob-row"
+                title={blob.name}
                 onClick={() => void selectBlob(blob.name)}
               >
                 <div>
-                  <h2>{blob.name}</h2>
+                  <h2>{formatBlobDisplayName(blob.name)}</h2>
                   <p>{blob.isWritten ? "Stored on Shelby RPC" : "Awaiting write confirmation"}</p>
                 </div>
                 <div className="blob-row-meta">
