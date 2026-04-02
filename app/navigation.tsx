@@ -4,15 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const topLinks = [
-  { href: "/", label: "MY DRIVE" },
-  { href: "/network-nodes", label: "NETWORK NODES" },
-  { href: "/billing", label: "BILLING" },
+  { href: "/", label: "VAULT" },
+  { href: "/network-nodes", label: "NETWORK" },
+  { href: "/billing", label: "LEDGER" },
 ];
 
 const sideLinks = [
-  { href: "/", label: "VAULT STATS", icon: "stack" },
-  { href: "/network-nodes", label: "STORAGE HUD", icon: "bars" },
-  { href: "/billing", label: "ACCESS LOGS", icon: "clock" },
+  { href: "/", label: "UPLOAD CONSOLE", icon: "stack" },
+  { href: "/network-nodes", label: "BLOB INSPECTOR", icon: "bars" },
+  { href: "/billing", label: "BILLING LEDGER", icon: "clock" },
 ];
 
 function isActive(pathname: string, href: string) {

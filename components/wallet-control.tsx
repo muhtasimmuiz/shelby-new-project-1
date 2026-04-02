@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useShelbyApp } from "../app/providers";
 
 function shortAddress(address: string | null) {
@@ -26,24 +26,54 @@ export function WalletControl() {
     wallets,
   } = useShelbyApp();
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const availableWallets = wallets.filter((wallet) => wallet.name);
+  const connectedLabel = connected ? `${walletName ?? "APTOS"} LIVE` : "CONNECT APTOS WALLET";
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
 
   return (
     <div className="wallet-zone">
       <div className="wallet-copy">
         <span>{shortAddress(accountAddress)}</span>
-        <small>{connected ? `${walletName ?? "APTOS"} VERIFIED` : "CONNECT APTOS WALLET"}</small>
+        <small>{connectedLabel}</small>
       </div>
 
       <button className="signal-button" type="button" aria-label="Wallet state">
         <span className={connected ? "is-live" : undefined} />
       </button>
 
-      <div className="wallet-control">
+      <div className="wallet-control" ref={menuRef}>
         <button
           className="wallet-button"
           type="button"
+          aria-expanded={open}
+          aria-haspopup="menu"
           onClick={() => {
             clearError();
 
@@ -57,16 +87,18 @@ export function WalletControl() {
           }}
         >
           {connected ? "DISCONNECT" : "CONNECT WALLET"}
+          {!connected ? <span aria-hidden="true">{open ? " -" : " +"}</span> : null}
         </button>
 
         {open && !connected ? (
-          <div className="wallet-menu">
+          <div className="wallet-menu" role="menu">
             {availableWallets.length ? (
               availableWallets.map((wallet) => (
                 <button
                   key={wallet.name}
                   type="button"
                   className="wallet-menu-item"
+                  role="menuitem"
                   onClick={() => {
                     setOpen(false);
                     void connectWallet(String(wallet.name));

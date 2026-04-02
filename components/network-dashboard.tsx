@@ -12,11 +12,42 @@ export function NetworkDashboard() {
     <div className="page-stack">
       <section className="hero-panel">
         <div className="hero-frame node-hero">
-          <p className="hero-kicker">ORCHESTRATE NODE FABRIC</p>
+          <div className="hero-badge-row">
+            <p className="hero-kicker">Blob Inspector</p>
+            <span className={`status-badge ${activeBlob ? "is-live" : ""}`}>
+              {activeBlob ? "Blob Selected" : "Idle"}
+            </span>
+          </div>
           <h1>
-            Inspect registered Shelby blobs, decode the active encoding profile, and keep the
-            currently selected object ready for download or audit.
+            Inspect registered Shelby blobs, review encoding metadata, and keep the current object
+            ready for audit or download.
           </h1>
+          <p className="hero-lead">
+            Use this panel to validate what is actually indexed on the network before sharing the
+            app publicly.
+          </p>
+          <div className="hero-metrics">
+            <div className="metric-chip">
+              <span>Registered</span>
+              <strong>{blobs.length}</strong>
+              <small>Available blobs</small>
+            </div>
+            <div className="metric-chip">
+              <span>Network</span>
+              <strong>{config.networkLabel}</strong>
+              <small>Shelby RPC target</small>
+            </div>
+            <div className="metric-chip">
+              <span>Encoding</span>
+              <strong>{encoding?.variant ?? "clay"}</strong>
+              <small>{activeBlob ? "Active blob profile" : "Default fallback"}</small>
+            </div>
+            <div className="metric-chip">
+              <span>Status</span>
+              <strong>{busyBlobName ? "Loading" : "Ready"}</strong>
+              <small>Metadata fetch state</small>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -89,6 +120,10 @@ export function NetworkDashboard() {
               <div className="metadata-row">
                 <span>Network</span>
                 <strong>{config.networkLabel}</strong>
+              </div>
+              <div className="metadata-row">
+                <span>Owner</span>
+                <strong>{activeBlob.owner}</strong>
               </div>
             </div>
           ) : (

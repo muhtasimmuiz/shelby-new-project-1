@@ -5,6 +5,7 @@ import { useShelbySummary } from "../app/providers";
 
 export function BillingDashboard() {
   const {
+    accountAddress,
     blobs,
     config,
     downloadBlob,
@@ -18,11 +19,42 @@ export function BillingDashboard() {
     <div className="page-stack">
       <section className="hero-panel">
         <div className="hero-frame billing-hero">
-          <p className="hero-kicker">TREASURY + USAGE LEDGER</p>
+          <div className="hero-badge-row">
+            <p className="hero-kicker">Treasury Ledger</p>
+            <span className={`status-badge ${config.shelbyApiKey ? "is-live" : ""}`}>
+              {config.shelbyApiKey ? "API Ready" : "Setup Needed"}
+            </span>
+          </div>
           <h1>
-            Monitor Shelby usage with a simple working ledger. Each upload is estimated at 1
-            ShelbyUSD based on the official browser upload guide.
+            Review current storage usage, environment readiness, and estimated ShelbyUSD impact for
+            each registered upload.
           </h1>
+          <p className="hero-lead">
+            The ledger is tuned for quick health checks before demos, client handoff, or public
+            launch.
+          </p>
+          <div className="hero-metrics">
+            <div className="metric-chip">
+              <span>Wallet</span>
+              <strong>{accountAddress ? "Linked" : "Offline"}</strong>
+              <small>{accountAddress ? "Ready to audit" : "Connect to sync"}</small>
+            </div>
+            <div className="metric-chip">
+              <span>Uploads</span>
+              <strong>{totalFiles}</strong>
+              <small>Registered blobs</small>
+            </div>
+            <div className="metric-chip">
+              <span>Stored</span>
+              <strong>{formattedBytes}</strong>
+              <small>Current wallet total</small>
+            </div>
+            <div className="metric-chip">
+              <span>Estimate</span>
+              <strong>{estimatedShelbyUsd}.00</strong>
+              <small>ShelbyUSD projected</small>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -61,12 +93,35 @@ export function BillingDashboard() {
             <p className="section-title">ENV READINESS</p>
             <span>SETUP</span>
           </div>
-          <div className="log-list">
-            <p>{config.shelbyApiKey ? "Shelby API key detected." : "Add NEXT_PUBLIC_SHELBY_API_KEY."}</p>
-            <p>{config.aptosApiKey ? "Aptos API key detected." : "Add NEXT_PUBLIC_APTOS_API_KEY."}</p>
-            <p>Integration: Shelby React SDK + Aptos Wallet Adapter</p>
-            <p>RPC URL: {config.rpcBaseUrl}</p>
-            <p>Docs: {config.docsUrl}</p>
+          <div className="readiness-list">
+            <div className="readiness-item">
+              <strong>Shelby Key</strong>
+              <p>
+                {config.shelbyApiKey
+                  ? "Shelby API key detected."
+                  : "Add NEXT_PUBLIC_SHELBY_API_KEY."}
+              </p>
+            </div>
+            <div className="readiness-item">
+              <strong>Aptos Key</strong>
+              <p>
+                {config.aptosApiKey
+                  ? "Aptos API key detected."
+                  : "Add NEXT_PUBLIC_APTOS_API_KEY."}
+              </p>
+            </div>
+            <div className="readiness-item">
+              <strong>Integration</strong>
+              <p>Shelby React SDK + Aptos Wallet Adapter</p>
+            </div>
+            <div className="readiness-item">
+              <strong>RPC URL</strong>
+              <p>{config.rpcBaseUrl}</p>
+            </div>
+            <div className="readiness-item">
+              <strong>Docs</strong>
+              <p>{config.docsUrl}</p>
+            </div>
           </div>
         </article>
       </section>

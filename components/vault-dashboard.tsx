@@ -23,6 +23,8 @@ export function VaultDashboard() {
     uploadQueue,
     uploading,
   } = useShelbySummary();
+  const queuedBytes = queue.reduce((sum, file) => sum + file.size, 0);
+  const walletReady = Boolean(accountAddress);
 
   function handleFiles(files: File[]) {
     clearError();
@@ -32,12 +34,43 @@ export function VaultDashboard() {
   return (
     <div className="page-stack">
       <section className="hero-panel">
-        <div className="hero-frame">
-          <p className="hero-kicker">DEPLOY DATA TO VAULT</p>
+        <div className="hero-frame vault-hero">
+          <div className="hero-badge-row">
+            <p className="hero-kicker">Vault Control</p>
+            <span className={`status-badge ${walletReady ? "is-live" : ""}`}>
+              {walletReady ? "Wallet Linked" : "Wallet Required"}
+            </span>
+          </div>
           <h1>
-            Real Shelby upload flow: select local files, sign the registration transaction, and
-            commit payloads to the Shelby RPC.
+            Upload local files with the Shelby browser flow, confirm the Aptos transaction, and
+            monitor indexed blobs from one clean control surface.
           </h1>
+          <p className="hero-lead">
+            This console is wired for Shelbynet with live queue visibility, fast metadata refresh,
+            and wallet-aware upload actions.
+          </p>
+          <div className="hero-metrics">
+            <div className="metric-chip">
+              <span>Queued</span>
+              <strong>{queue.length}</strong>
+              <small>{formatBytes(queuedBytes)}</small>
+            </div>
+            <div className="metric-chip">
+              <span>Indexed</span>
+              <strong>{blobs.length}</strong>
+              <small>Current wallet blobs</small>
+            </div>
+            <div className="metric-chip">
+              <span>Network</span>
+              <strong>{config.networkLabel}</strong>
+              <small>RPC ready</small>
+            </div>
+            <div className="metric-chip">
+              <span>Mode</span>
+              <strong>{uploading ? "Uploading" : "Ready"}</strong>
+              <small>React SDK flow</small>
+            </div>
+          </div>
           <div className="hero-actions">
             <button
               type="button"
@@ -74,11 +107,32 @@ export function VaultDashboard() {
         </div>
       </section>
 
+      <section className="panel onboarding-panel">
+        <div className="section-header">
+          <p className="section-title">Publish Checklist</p>
+          <span>{walletReady ? "LIVE CONFIG" : "ACTION NEEDED"}</span>
+        </div>
+        <div className="checklist-grid">
+          <div className="checklist-card">
+            <strong>1. Wallet</strong>
+            <p>{walletReady ? "Aptos wallet connected and ready to sign." : "Connect an Aptos wallet to unlock uploads."}</p>
+          </div>
+          <div className="checklist-card">
+            <strong>2. API</strong>
+            <p>{config.shelbyApiKey ? "Shelby client key loaded from environment." : "Add NEXT_PUBLIC_SHELBY_API_KEY to continue."}</p>
+          </div>
+          <div className="checklist-card">
+            <strong>3. Files</strong>
+            <p>{queue.length ? `${queue.length} file(s) staged for commit.` : "Queue one or more files from your machine."}</p>
+          </div>
+        </div>
+      </section>
+
       {error ? <div className="alert-banner is-error">{error}</div> : null}
       {!accountAddress ? (
         <div className="alert-banner">
-          Connect an Aptos wallet first. Shelby uploads need wallet signing plus ShelbyUSD/APT on
-          the selected network.
+          Connect an Aptos wallet first. Shelby uploads need wallet signing plus ShelbyUSD and APT
+          on the selected network.
         </div>
       ) : null}
 
@@ -105,7 +159,7 @@ export function VaultDashboard() {
         }}
       >
         <p className="section-title">DROP FILES HERE</p>
-        <p>Use drag and drop for faster intake, or keep using the local browser button above.</p>
+        <p>Drag files into the vault for faster staging, or keep using the browse button above.</p>
       </section>
 
       <section className="dual-grid">
@@ -113,7 +167,7 @@ export function VaultDashboard() {
           <div className="section-header">
             <p className="section-title">QUEUE + TRANSFERS</p>
             <div className="section-actions">
-              <span>{queue.length ? `${queue.length} READY` : "EMPTY"}</span>
+              <span>{queue.length ? `${queue.length} READY / ${formatBytes(queuedBytes)}` : "EMPTY"}</span>
               {queue.length ? (
                 <button type="button" className="tiny-button" onClick={clearQueue}>
                   CLEAR
@@ -133,7 +187,7 @@ export function VaultDashboard() {
                       </div>
                       <div>
                         <h2>{file.name}</h2>
-                        <p>Prepared for commit on Shelby. Transaction signature required.</p>
+                        <p>Prepared for Shelby commit. Wallet signature will be requested.</p>
                       </div>
                     </div>
 
@@ -146,7 +200,7 @@ export function VaultDashboard() {
               ))
             ) : (
               <div className="empty-panel">
-                <p>No files queued yet. Use "Browse Local Node" to select data for upload.</p>
+                <p>No files queued yet. Use Browse Local Node to stage data for upload.</p>
               </div>
             )}
           </div>
@@ -157,7 +211,7 @@ export function VaultDashboard() {
             <p className="section-title">SYSTEM LOGS</p>
             <span>{activity.length} EVENTS</span>
           </div>
-          <div className="log-list">
+          <div className="log-list" aria-live="polite">
             {activity.length ? (
               activity.map((line) => (
                 <p key={line.id} className={`log-entry is-${line.level}`}>
@@ -203,7 +257,7 @@ export function VaultDashboard() {
             ))
           ) : (
             <div className="empty-panel">
-              <p>No blobs indexed for this wallet yet.</p>
+              <p>No blobs indexed for this wallet yet. Upload a file to populate this list.</p>
             </div>
           )}
         </div>

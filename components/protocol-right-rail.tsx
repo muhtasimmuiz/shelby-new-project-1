@@ -3,6 +3,14 @@
 import { formatMicros } from "../lib/shelby-runtime";
 import { useShelbySummary } from "../app/providers";
 
+function rpcLabel(url: string) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
 export function ProtocolRightRail() {
   const {
     accountAddress,
@@ -13,19 +21,26 @@ export function ProtocolRightRail() {
     totalFiles,
     usedPercent,
   } = useShelbySummary();
+  const endpointLabel = rpcLabel(config.rpcBaseUrl);
 
   return (
     <aside className="stats-rail">
       <section className="rail-card storage-card">
+        <div className="chart-caption">
+          <span>Storage Health</span>
+          <strong>{accountAddress ? "LIVE" : "STANDBY"}</strong>
+        </div>
         <div className="gauge-frame">
           <div className="gauge-value">
             <strong>{usedPercent}%</strong>
-            <span>USED</span>
+            <span>PROJECTED LOAD</span>
           </div>
         </div>
         <p className="storage-copy">{formattedBytes} stored for this wallet</p>
         <p className="status-copy">
-          {accountAddress ? `${totalFiles} BLOBS INDEXED` : "CONNECT TO START INDEXING"}
+          {accountAddress
+            ? `${totalFiles} BLOBS INDEXED`
+            : "CONNECT A WALLET TO START INDEXING"}
         </p>
       </section>
 
@@ -36,25 +51,29 @@ export function ProtocolRightRail() {
         </div>
         <div className="sdk-status-grid">
           <div>
-            <span>API KEY</span>
+            <span>CLIENT KEY</span>
             <strong>{config.shelbyApiKey ? "READY" : "MISSING"}</strong>
           </div>
           <div>
-            <span>SHELBYUSD</span>
-            <strong>{estimatedShelbyUsd}.00</strong>
+            <span>APTOS KEY</span>
+            <strong>{config.aptosApiKey ? "READY" : "OPTIONAL"}</strong>
           </div>
           <div>
-            <span>RPC</span>
-            <strong>ONLINE</strong>
+            <span>WALLET</span>
+            <strong>{accountAddress ? "CONNECTED" : "NOT LINKED"}</strong>
           </div>
           <div>
-            <span>SDK MODE</span>
-            <strong>REACT</strong>
+            <span>LEDGER EST.</span>
+            <strong>{estimatedShelbyUsd}.00 sUSD</strong>
+          </div>
+          <div>
+            <span>RPC HOST</span>
+            <strong>{endpointLabel}</strong>
           </div>
           <div>
             <span>DOCS</span>
             <a href={config.docsUrl} target="_blank" rel="noreferrer">
-              OPEN
+              OPEN DOCS
             </a>
           </div>
         </div>
@@ -73,12 +92,13 @@ export function ProtocolRightRail() {
             <div className="blob-summary-meta">
               <span>{activeBlob.size.toLocaleString()} bytes</span>
               <span>{formatMicros(activeBlob.creationMicros)}</span>
+              <span>{activeBlob.encoding?.variant ?? "clay"} encoding</span>
             </div>
           </div>
         ) : (
           <div className="blob-summary-card is-empty">
             <h3>No blob selected</h3>
-            <p>Upload or inspect a file to see live Shelby metadata here.</p>
+            <p>Upload or inspect a file to surface live metadata and network details here.</p>
           </div>
         )}
       </section>
